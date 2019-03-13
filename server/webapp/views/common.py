@@ -3,7 +3,6 @@
 from sklearn.externals import joblib
 from flask import Response, request
 from webapp import app
-import pandas as pd
 import numpy as np
 import datetime
 import json
@@ -19,36 +18,16 @@ def model():
     print(path)
     if request.method == "POST":
         ## Recieve input in Json format which is coming from POSTMAN request
-        json_array = request.get_json()
+        data = request.get_json()
         ## Convert json into pandas dataframe
-        df = pd.DataFrame.from_dict(json_array)
-        ## Now it's time to set the feature as we set during the model
-        df['CreatedTime'] = pd.to_datetime(df['CreatedTime'])
-        print(df['CreatedTime'])
-        timestamp_into_int = df['CreatedTime'].values.astype(int)
-        location_code = df[['LocationCode', 'PendingOrdersLocationWise', 'Qty']].values
+        print (np.array([data['variance'],data['skewness'],data['curtosis'],data['entropy']]))
         ## Create numpy array of inputs
-        X = np.insert(location_code, 1,timestamp_into_int , axis=1)
+        X = np.array([[data['variance'],data['skewness'],data['curtosis'],data['entropy']]])
         ## Load the saved model
-        model = joblib.load(path+'/model1_dt.sav')
-        ## Getting created time to add the predicted time in to it.
-        time = df.iloc[0]['CreatedTime']
+        model = joblib.load(path+'/banknote_trained_model.sav')
         ## Predicting the output
         predict_output = model.predict(X)
-        ## Convert output into real minutes
-        minutes = np.floor(np.multiply(np.subtract(np.multiply(predict_output,24), 
-            np.floor(np.multiply(predict_output,24))),60))
-        Organization_ID = df['OrganizationID']
-        print(Organization_ID)
-        hours = str(predict_output[0]).split('.')[0]
-        minutes = str(minutes[0]).split('.')[0] 
-
-        total_time = time + datetime.timedelta(hours=int(hours) , minutes=int(minutes))
-        hour_min_days = total_time - time
-        ## Setting up the json format for sending output in json 
-        t1={ 
-            'time_in_hours_and_minutes':str(hour_min_days),
-            'time_with_date_and_time':str(total_time)
-        }
-        response = Response(json.dumps(t1))
+        ## Set response
+        print(predict_output)
+        response = Response(json.dumps({'output':str(predict_output[0])}))
         return response
