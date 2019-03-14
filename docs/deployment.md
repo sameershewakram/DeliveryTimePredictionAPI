@@ -18,7 +18,7 @@ Follow these steps in order to deploy it correctly via Python VirtualEnviroment.
     ```
 6. Install the required packages
     ```bash
-       pip install -r requirements.txt
+       pip install flask numpy sklearn flask_autodoc flask_cors pandas
     ```
 7. Running Server (run.py file is inside the server folder)
     ```python
